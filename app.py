@@ -17,38 +17,34 @@ def parse_args():
 
 def console_loading():
     for i in range(3):
-        print(".",end="",flush=True)
+        print('.',end="",flush=True)
         time.sleep(0.5)
+    print("\033[4D \033[K", end="", flush=True)
+
+def call_status(status):
+    i=0
+    while twilio_client.calls(call.sid).fetch().status==status:
+        i+=1
+        if i==1:
+            print(f"\033[93m { 'Connecting '  if status=='queued' else 'Ringing '} \033[0m",end="",flush=True)
+        console_loading()
     print("\r   \r", end="", flush=True)
-
-def call_queued(call):
-    i=0
-    while call.status == 'queued':
-        i+=1
-        if i==1:
-            print("Call is connecting ",end="",flush=True)
-        for i in range(3):
-            print('.',end="",flush=True)
-            time.sleep(0.5)
-        print("\033[4D \033[K", end="", flush=True)
     
-        
-def call_ringing(call):
-    i=0
-    while call.status == 'ringing':
-        i+=1
-        if i==1:
-            print("Call is connecting ",end="",flush=True)
-        for i in range(3):
-            print('.',end="",flush=True)
-            time.sleep(0.5)
-        print("\033[4D \033[K", end="", flush=True)
     
-        
 
+# Routes
 @app.route("/", methods=['GET'])
 def index():
     return ""
+
+@app.route("/twiml", methods=['GET'])
+def twiml_response():
+    return ""
+
+
+
+
+
 
 if __name__ == "__main__":
     args = parse_args()
@@ -60,19 +56,17 @@ if __name__ == "__main__":
     # Wait for Ngrok to connect
     i=0
     while "https" not in public_url:
-        i=i+1
+        i+=1
         if i==1:
-            print("Waiting for Ngrok to connect ",end="",flush=True)
-        for i in range(3):
-            print('.',end="",flush=True)
-            time.sleep(0.5)
-        print("\033[4D \033[K", end="", flush=True)
+            print("\033[93m Waiting for Ngrok to connect \033[0m",end="",flush=True)
+        console_loading()
         time.sleep(1)
         ngrok_tunnel = ngrok.connect(args.port, bind_tls=True)
         public_url = ngrok_tunnel.public_url
 
     print("\r   \r", end="", flush=True)  # remove the text from the console
-    print("Ngrok Server is running.", flush=True)
+    print("\n\033[92m Ngrok Server is running. \033[0m", flush=True)
+    print(f"\033[96m {public_url} \033[0m", flush=True)
 
     twilio_client = Client(os.environ.get('TWILIO_ACCOUNT_ID'),os.environ.get('TWILIO_AUTH_TOKEN'))
 
@@ -82,31 +76,22 @@ if __name__ == "__main__":
     from_='+12029000087',
     )
 
-    # Monitor call status until it is no longer "queued" or "ringing"
-    i=0
+   
+    # Monitor call status 
     while True:
-        i+=1
-        call = twilio_client.calls(call.sid).fetch()
-        if call.status == "queued":
-            call_queued(call)
-        elif call.status == "ringing":
-            print("\r   \r", end="", flush=True)
-            print("Call is connected. ",flush=True)
-            print("\n\nCall is ringing ",end="",flush=True)
-            call_ringing(call)
-        elif call.status == "in-progress":
-            print("Call is in progress...")
-        elif call.status == "completed":
-            print("Call has completed.")
-            break
+        call=twilio_client.calls(call.sid).fetch()
+        if call.status=='queued':
+            call_status("queued")
+            print("\033[92m Call is connected. \033[0m",flush=True)
+        elif call.status=='ringing':
+            call_status("ringing")
         else:
-            print("Call status: ", call.status)
-    
-        time.sleep(1)
-        print(".", end="", flush=True)
+            print(f"\033[91m Call status: {call.status} \033[0m\n")
+            break
 
-    # Run the Flask app
+    
     app.run()
+   
 
 
 # Twilio Call Status
