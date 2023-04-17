@@ -1,3 +1,4 @@
+from routes.twilio import app as routes
 from twilio.rest import Client
 from dotenv import load_dotenv
 from pyngrok import ngrok
@@ -7,7 +8,9 @@ import os
 import time
 
 load_dotenv() # Load environment variables from .env file
+
 app = Flask(__name__)
+app.register_blueprint(routes)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -30,21 +33,6 @@ def call_status(status):
         console_loading()
     print("\r   \r", end="", flush=True)
     
-    
-
-# Routes
-@app.route("/", methods=['GET'])
-def index():
-    return ""
-
-@app.route("/twiml", methods=['GET'])
-def twiml_response():
-    return ""
-
-
-
-
-
 
 if __name__ == "__main__":
     args = parse_args()
@@ -84,13 +72,16 @@ if __name__ == "__main__":
             call_status("queued")
             print("\033[92m Call is connected. \033[0m",flush=True)
         elif call.status=='ringing':
-            call_status("ringing")
+            call_status(call.status)
+        elif call.status=='in-progress':
+            print("\033[95m Call is in progress. \033[0m",flush=True)
+            app.run()
         else:
             print(f"\033[91m Call status: {call.status} \033[0m\n")
             break
 
     
-    app.run()
+    
    
 
 
