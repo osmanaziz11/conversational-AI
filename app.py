@@ -1,4 +1,5 @@
 from routes.twilio import app as routes
+from util.socket_connection import socketio as sos
 from twilio.rest import Client
 from dotenv import load_dotenv
 from pyngrok import ngrok
@@ -11,6 +12,7 @@ load_dotenv() # Load environment variables from .env file
 
 app = Flask(__name__)
 app.register_blueprint(routes)
+sos.init_app(app)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -73,7 +75,7 @@ if __name__ == "__main__":
             
         elif call.status=='ringing':
             call_status(call.status)
-            app.run()
+            sos.run(app)
         elif call.status=='in-progress':
             print("\033[95m Call is in progress. \033[0m",flush=True)
             
