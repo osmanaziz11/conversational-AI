@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 from pyngrok import ngrok
 from flask import Flask
 import argparse
-import os
 import time
+import os
 
 load_dotenv() # Load environment variables from .env file
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     print("\r   \r", end="", flush=True)  # remove the text from the console
     print("\n\033[92m Ngrok Server is running. \033[0m", flush=True)
     print(f"\033[96m {public_url} \033[0m", flush=True)
-
+    time.sleep(20)
     twilio_client = Client(os.environ.get('TWILIO_ACCOUNT_ID'),os.environ.get('TWILIO_AUTH_TOKEN'))
 
     call = twilio_client.calls.create(
@@ -64,25 +64,22 @@ if __name__ == "__main__":
     from_='+12029000087',
     )
 
-   
     # Monitor call status 
     while True:
         call=twilio_client.calls(call.sid).fetch()
         if call.status=='queued':
             call_status("queued")
             print("\033[92m Call is connected. \033[0m",flush=True)
+            
         elif call.status=='ringing':
             call_status(call.status)
+            app.run()
         elif call.status=='in-progress':
             print("\033[95m Call is in progress. \033[0m",flush=True)
-            app.run()
+            
         else:
             print(f"\033[91m Call status: {call.status} \033[0m\n")
             break
-
-    
-    
-   
 
 
 # Twilio Call Status
