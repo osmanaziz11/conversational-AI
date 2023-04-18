@@ -1,15 +1,17 @@
-from flask_socketio import SocketIO
+from flask_sock import Sock
+import json
 
-socketio=SocketIO()
+sock=Sock()
 
-@socketio.on('connect')
-def handle_connect():
-    print('Client connected')
-
-@socketio.on('disconnect')
-def handle_disconnect():
-    print('Client disconnected')
-
-@socketio.on('stream')
-def handle_stream(data):
-    print('Received data:', data)
+@sock.route('/stream')
+def stream(ws):
+    """Receive and transcribe audio stream."""
+    while True:
+        message = ws.receive()
+        packet = json.loads(message)
+        if packet['event'] == 'start':
+            print('Streaming is starting')
+        elif packet['event'] == 'stop':
+            print('\nStreaming has stopped')
+        elif packet['event'] == 'media':
+            print("Receving audio...")

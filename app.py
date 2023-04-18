@@ -1,5 +1,5 @@
 from routes.twilio import app as routes
-from util.socket_connection import socketio as sos
+from util.socket_connection import sock as sos
 from twilio.rest import Client
 from dotenv import load_dotenv
 from pyngrok import ngrok
@@ -75,7 +75,7 @@ if __name__ == "__main__":
             
         elif call.status=='ringing':
             call_status(call.status)
-            sos.run(app)
+            app.run()
         elif call.status=='in-progress':
             print("\033[95m Call is in progress. \033[0m",flush=True)
             

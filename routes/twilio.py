@@ -7,7 +7,7 @@ app = Blueprint('app', __name__)
 def twiml_response():
     response = VoiceResponse()
     start = Start()
-    start.stream(url=f'wss://{request.host}')
+    start.stream(url=f'wss://{request.host}/stream')
     response.append(start)
     response.say('Please leave a message')
     response.pause(length=60)
